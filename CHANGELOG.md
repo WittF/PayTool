@@ -1,3 +1,13 @@
+## [1.0.2](https://github.com/WittF/PayTool/compare/v1.0.1...v1.0.2) (2025-08-27)
+
+### 🐛 Bug修复
+
+* **commands:** 限制详细错误信息仅在devMode下显示 ([ab44263](https://github.com/WittF/PayTool/commit/ab44263e5e5f8ff7c1002a594b458a63cab2b88a))
+
+### 📚 文档更新
+
+* **guide:** 更新贡献指南和README文件，调整提交信息格式 ([5e370a9](https://github.com/WittF/PayTool/commit/5e370a9e3de358f75be0965794d444c0e049655e))
+
 ## [1.0.1](https://github.com/WittF/PayTool/compare/v1.0.0...v1.0.1) (2025-08-27)
 
 ### 🐛 Bug修复
