@@ -50,7 +50,7 @@ export function setupCommands(
   // 创建订单指令
   payCmd.subcommand('.create <amount:number> [payment:string]', '创建支付订单')
     .action(async ({ session }, amount, payment) => {
-      if (!session) return
+      if (!session || !session.userId) return
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
@@ -108,7 +108,7 @@ export function setupCommands(
           outTradeNo,            // 我们生成的商户订单号
           session.userId,
           session.guildId || '',
-          session.channelId,
+          session.channelId || '',
           formatAmount(amount),
           paymentType
         )
@@ -174,7 +174,7 @@ export function setupCommands(
   // 查询订单指令
   payCmd.subcommand('.query <target:string>', '查询订单状态或用户订单')
     .action(async ({ session }, target) => {
-      if (!session) return
+      if (!session || !session.userId) return
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
@@ -322,7 +322,7 @@ export function setupCommands(
   // 退款指令
   payCmd.subcommand('.refund <tradeNo:string>', '申请退款')
     .action(async ({ session }, tradeNo) => {
-      if (!session) return
+      if (!session || !session.userId) return
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
@@ -389,7 +389,7 @@ export function setupCommands(
   // 订单分配指令
   payCmd.subcommand('.provisioning <tradeNo:string> <targetUser:string>', '分配订单给指定用户')
     .action(async ({ session }, tradeNo, targetUser) => {
-      if (!session) return
+      if (!session || !session.userId) return
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
