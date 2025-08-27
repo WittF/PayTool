@@ -90,21 +90,36 @@ export function setupCallback(
         try {
           const targetChannelId = localOrder.channel_id
           const targetGuildId = localOrder.guild_id
+          let messageSent = false
 
-          if (targetGuildId) {
-            // 群聊通知
-            await ctx.broadcast([`${targetGuildId}:${targetChannelId}`], h('message', { forward: true }, [
-              h('message', {}, successMessages.join('\n'))
-            ]))
-          } else {
-            // 私聊通知
-            await ctx.broadcast([`private:${localOrder.user_id}`], h('message', { forward: true }, [
-              h('message', {}, successMessages.join('\n'))
-            ]))
+          for (const bot of ctx.bots) {
+            try {
+              if (targetGuildId && targetChannelId) {
+                // 群聊通知
+                await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
+                  h('message', {}, successMessages.join('\n'))
+                ]))
+                if (config.devMode) {
+                  logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
+                }
+              } else {
+                // 私聊通知
+                await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
+                  h('message', {}, successMessages.join('\n'))
+                ]))
+                if (config.devMode) {
+                  logger.info(`已发送支付成功通知到用户 ${localOrder.user_id}`)
+                }
+              }
+              messageSent = true
+              break // 成功发送后退出循环
+            } catch (botError: any) {
+              logger.warn(`Bot ${bot.platform}:${bot.selfId} 发送消息失败: ${botError?.message}`)
+            }
           }
 
-          if (config.devMode) {
-            logger.info(`已发送支付成功通知到用户 ${localOrder.user_id}`)
+          if (!messageSent) {
+            throw new Error('所有Bot都发送失败')
           }
         } catch (error: any) {
           logger.error(`发送支付成功通知失败: ${error?.message || '未知错误'}`)

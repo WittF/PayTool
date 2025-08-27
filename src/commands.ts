@@ -300,15 +300,22 @@ export function setupCommands(
           const targetChannelId = localOrder.channel_id
           const targetGuildId = localOrder.guild_id
 
-          if (targetGuildId) {
-            await ctx.broadcast([`${targetGuildId}:${targetChannelId}`], h('message', { forward: true }, [
-              h('message', {}, messages.join('\n'))
-            ]))
-          } else {
-            for (const bot of ctx.bots) {
-              await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
-                h('message', {}, messages.join('\n'))
-              ]))
+          for (const bot of ctx.bots) {
+            try {
+              if (targetGuildId && targetChannelId) {
+                // 群聊通知
+                await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
+                  h('message', {}, messages.join('\n'))
+                ]))
+              } else {
+                // 私聊通知
+                await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
+                  h('message', {}, messages.join('\n'))
+                ]))
+              }
+              break // 成功发送后退出循环
+            } catch (botError: any) {
+              logger.warn(`Bot ${bot.platform}:${bot.selfId} 主动查询通知发送失败: ${botError?.message}`)
             }
           }
         }
@@ -368,15 +375,22 @@ export function setupCommands(
         const targetChannelId = localOrder.channel_id
         const targetGuildId = localOrder.guild_id
 
-        if (targetGuildId) {
-          await ctx.broadcast([`${targetGuildId}:${targetChannelId}`], h('message', { forward: true }, [
-            h('message', {}, messages.join('\n'))
-          ]))
-        } else {
-          for (const bot of ctx.bots) {
-            await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
-              h('message', {}, messages.join('\n'))
-            ]))
+        for (const bot of ctx.bots) {
+          try {
+            if (targetGuildId && targetChannelId) {
+              // 群聊通知
+              await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
+                h('message', {}, messages.join('\n'))
+              ]))
+            } else {
+              // 私聊通知
+              await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
+                h('message', {}, messages.join('\n'))
+              ]))
+            }
+            break // 成功发送后退出循环
+          } catch (botError: any) {
+            logger.warn(`Bot ${bot.platform}:${bot.selfId} 退款通知发送失败: ${botError?.message}`)
           }
         }
 
