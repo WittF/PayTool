@@ -1,5 +1,8 @@
 # PayTool - Koishi 易支付插件
 
+[![npm version](https://badge.fury.io/js/koishi-plugin-chat-summarizer.svg)](https://badge.fury.io/js/koishi-plugin-chat-summarizer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 一个适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款、分配等功能，集成微信支付和支付宝支付。
 
 ## 功能特性
@@ -43,37 +46,21 @@
 ```
 pay.create <金额> [支付方式]
 ```
-
-**示例:**
-- `pay.create 10` - 创建10元订单，使用默认支付方式
-- `pay.create 25.5 alipay` - 创建25.5元订单，使用支付宝支付
-- `pay.create 100 wxpay` - 创建100元订单，使用微信支付
-
 ### 查询订单
 ```
 pay.query <订单号>      # 查询指定订单
 pay.query @用户         # 查询用户所有订单  
 ```
 
-**示例:**
-- `pay.query 202312011234567890123` - 查询指定订单状态
-- `pay.query @123456789` - 查询用户所有订单
-
 ### 申请退款
 ```
 pay.refund <订单号>
 ```
 
-**示例:**
-- `pay.refund 202312011234567890123`
-
 ### 分配订单
 ```
 pay.provisioning <订单号> @用户
 ```
-
-**示例:**
-- `pay.provisioning 202312011234567890123 @123456789`
 
 ## 高级功能
 
@@ -87,11 +74,6 @@ pay.provisioning <订单号> @用户
 ### 贡献代码
 
 如果您想为本项目贡献代码，请查看 [贡献指南](CONTRIBUTING.md) 了解：
-
-- 提交规范和格式要求
-- 自动发布流程说明
-- 开发环境设置
-- 版本管理规则
 
 项目使用 [semantic-release](https://github.com/semantic-release/semantic-release) 进行自动版本管理和发布。
 
