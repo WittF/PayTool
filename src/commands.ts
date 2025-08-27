@@ -149,11 +149,17 @@ export function setupCommands(
         
         // 根据用户身份发送不同错误信息
         if (isAdmin(session.userId, config.adminQQ)) {
-          // 管理员看详细错误
-          await session.send(h('message', { forward: true }, [
-            h('message', {}, `❌ 订单创建失败`),
-            h('message', {}, `错误详情: ${error?.message || '未知错误'}`)
-          ]))
+          // 管理员错误信息：根据devMode决定详细程度
+          if (config.devMode) {
+            // 开发模式：显示详细错误信息
+            await session.send(h('message', { forward: true }, [
+              h('message', {}, `❌ 订单创建失败`),
+              h('message', {}, `错误详情: ${error?.message || '未知错误'}`)
+            ]))
+          } else {
+            // 生产模式：只显示简洁错误
+            await session.send(`❌ 订单创建失败: ${error?.message || '未知错误'}`)
+          }
         } else {
           // 普通用户看简单错误
           await session.send('❌ 订单创建失败，请稍后重试')
@@ -314,7 +320,13 @@ export function setupCommands(
 
       } catch (error: any) {
         logger.error(`查询订单失败: ${error?.message || '未知错误'}`, error)
-        await sendMessage(session, [`❌ 查询订单失败: ${error?.message || '未知错误'}`])
+        
+        // 根据devMode决定错误信息详细程度
+        if (config.devMode) {
+          await sendMessage(session, [`❌ 查询订单失败: ${error?.message || '未知错误'}`])
+        } else {
+          await sendMessage(session, ['❌ 查询订单失败，请稍后重试'])
+        }
       }
     })
 
@@ -392,7 +404,13 @@ export function setupCommands(
 
       } catch (error: any) {
         logger.error(`申请退款失败: ${error?.message || '未知错误'}`, error)
-        await sendMessage(session, [`❌ 申请退款失败: ${error?.message || '未知错误'}`])
+        
+        // 根据devMode决定错误信息详细程度
+        if (config.devMode) {
+          await sendMessage(session, [`❌ 申请退款失败: ${error?.message || '未知错误'}`])
+        } else {
+          await sendMessage(session, ['❌ 申请退款失败，请稍后重试'])
+        }
       }
     })
 
@@ -455,7 +473,13 @@ export function setupCommands(
 
       } catch (error: any) {
         logger.error(`订单分配失败: ${error?.message || '未知错误'}`, error)
-        await sendMessage(session, [`❌ 订单分配失败: ${error?.message || '未知错误'}`])
+        
+        // 根据devMode决定错误信息详细程度
+        if (config.devMode) {
+          await sendMessage(session, [`❌ 订单分配失败: ${error?.message || '未知错误'}`])
+        } else {
+          await sendMessage(session, ['❌ 订单分配失败，请稍后重试'])
+        }
       }
     })
 
