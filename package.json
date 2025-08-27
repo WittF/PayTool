@@ -1,0 +1,47 @@
+{
+  "name": "koishi-plugin-pay-tool",
+  "description": "适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款等功能",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepublishOnly": "npm run clean && npm run build",
+    "semantic-release": "semantic-release"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "payment",
+    "epay",
+    "支付"
+  ],
+  "koishi": {
+    "description": {
+      "zh": "易支付工具插件，支持订单创建、查询、退款功能，集成微信支付和支付宝支付"
+    }
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/npm": "^12.0.2",
+    "@types/node": "^20.10.0",
+    "conventional-changelog-conventionalcommits": "^9.0.0",
+    "rimraf": "^5.0.0",
+    "semantic-release": "^24.2.6",
+    "typescript": "^5.5.4"
+  },
+  "peerDependencies": {
+    "@koishijs/plugin-server": "^3.2.4",
+    "koishi": "^4.3.2"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
