@@ -5,7 +5,7 @@
 本项目使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
 
 ```
-<type>: <description>
+<type>(scope): <description>
 
 ### 发布说明分类
 
@@ -25,10 +25,11 @@
 ### 示例
 
 ```bash
-feat: 添加订单自动查询功能
-fix: 修复支付回调验证失败
-docs: 更新配置说明
-refactor: 优化数据库查询逻辑
+feat(commands): 添加订单自动查询功能
+fix(api): 修复支付回调验证失败
+docs(readme): 更新配置说明
+refactor(database): 优化数据库查询逻辑
+chore(deps): 更新依赖版本
 ```
 
 ### 重大变更
@@ -36,7 +37,7 @@ refactor: 优化数据库查询逻辑
 在类型后添加 `!` 触发 major 版本更新：
 
 ```bash
-feat!: 重构API接口
+feat(api)!: 重构API接口
 ```
 
 ## 自动发布

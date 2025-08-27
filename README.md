@@ -1,6 +1,6 @@
 # PayTool - Koishi 易支付插件
 
-[![npm version](https://badge.fury.io/js/koishi-plugin-chat-summarizer.svg)](https://badge.fury.io/js/koishi-plugin-chat-summarizer)
+[![npm version](https://badge.fury.io/js/koishi-plugin-pay-tool.svg)](https://badge.fury.io/js/koishi-plugin-pay-tool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 一个适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款、分配等功能，集成微信支付和支付宝支付。
