@@ -93,9 +93,8 @@ export function setupCommands(
         // 生成商户订单号
         const outTradeNo = generateOrderNo(session.userId)
         
-        if (config.devMode) {
-          logger.info(`用户 ${session.userId} 创建订单，金额: ${amount}，支付方式: ${paymentType}，订单号: ${outTradeNo}`)
-        }
+        // 重要操作日志 - 始终显示
+        logger.info(`用户 ${session.userId} 创建订单，金额: ${amount}，支付方式: ${paymentType}，订单号: ${outTradeNo}`)
 
         // 调用API创建订单
         const orderResult = await epayClient.createOrder(
@@ -203,9 +202,8 @@ export function setupCommands(
         
         if (normalizedQQ) {
           // 如果是有效的QQ号，查询该用户的所有订单
-          if (config.devMode) {
-            logger.info(`管理员 ${session.userId} 查询用户订单: ${normalizedQQ}`)
-          }
+          // 重要操作日志 - 始终显示
+          logger.info(`管理员 ${session.userId} 查询用户订单: ${normalizedQQ}`)
           
           const userOrders = await orderDb.getOrdersByCustomerQQ(normalizedQQ)
           
@@ -233,9 +231,8 @@ export function setupCommands(
             return
           }
           
-          if (config.devMode) {
-            logger.info(`管理员 ${session.userId} 查询订单: ${tradeNo}`)
-          }
+          // 重要操作日志 - 始终显示
+          logger.info(`管理员 ${session.userId} 查询订单: ${tradeNo}`)
 
           // 查询本地数据库
           const localOrder = await orderDb.getOrderByOutTradeNo(tradeNo) || 
@@ -283,7 +280,10 @@ export function setupCommands(
               await sendMessage(session, [queryResult])
               return
             } catch (error: any) {
-              logger.error(`强制查询订单失败: ${error?.message || '未知错误'}`, error)
+              // 内部错误 - 只在devMode下显示
+              if (config.devMode) {
+                logger.error(`强制查询订单失败: ${error?.message || '未知错误'}`, error)
+              }
               // 继续执行正常的查询逻辑
             }
           }
@@ -444,9 +444,8 @@ export function setupCommands(
           return
         }
 
-        if (config.devMode) {
-          logger.info(`管理员 ${session.userId} 分配订单 ${tradeNo} 给用户 ${customerQQ}`)
-        }
+        // 重要操作日志 - 始终显示
+        logger.info(`管理员 ${session.userId} 分配订单 ${tradeNo} 给用户 ${customerQQ}`)
 
         // 查询订单是否存在
         const localOrder = await orderDb.getOrderByOutTradeNo(tradeNo) || 
@@ -590,11 +589,13 @@ async function startActivePolling(
             h('message', {}, successMessages.join('\n'))
           ])], { quote: false })
           
-          if (config.devMode) {
-            logger.info(`已发送支付成功通知到用户 ${session.userId}`)
-          }
+          // 重要操作日志 - 始终显示
+          logger.info(`已发送支付成功通知到用户 ${session.userId}`)
         } catch (error: any) {
-          logger.error(`发送支付成功通知失败: ${error?.message || '未知错误'}`)
+          // 内部错误 - 只在devMode下显示
+          if (config.devMode) {
+            logger.error(`发送支付成功通知失败: ${error?.message || '未知错误'}`)
+          }
         }
         
         return // 支付成功，停止轮询
@@ -616,7 +617,10 @@ async function startActivePolling(
       }
 
     } catch (error: any) {
-      logger.error(`主动查询订单失败: ${error?.message || '未知错误'}`)
+      // 内部错误 - 只在devMode下显示
+      if (config.devMode) {
+        logger.error(`主动查询订单失败: ${error?.message || '未知错误'}`)
+      }
       
       // 查询失败也继续轮询
       if (pollingCount < maxPollingCount) {

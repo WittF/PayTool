@@ -99,17 +99,15 @@ export function setupCallback(
                 await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
                   h('message', {}, successMessages.join('\n'))
                 ]))
-                if (config.devMode) {
-                  logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
-                }
+                // 重要操作日志 - 始终显示
+                logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
               } else {
                 // 私聊通知
                 await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
                   h('message', {}, successMessages.join('\n'))
                 ]))
-                if (config.devMode) {
-                  logger.info(`已发送支付成功通知到用户 ${localOrder.user_id}`)
-                }
+                // 重要操作日志 - 始终显示
+                logger.info(`已发送支付成功通知到用户 ${localOrder.user_id}`)
               }
               messageSent = true
               break // 成功发送后退出循环
@@ -122,7 +120,10 @@ export function setupCallback(
             throw new Error('所有Bot都发送失败')
           }
         } catch (error: any) {
-          logger.error(`发送支付成功通知失败: ${error?.message || '未知错误'}`)
+          // 内部错误 - 只在devMode下显示
+          if (config.devMode) {
+            logger.error(`发送支付成功通知失败: ${error?.message || '未知错误'}`)
+          }
         }
 
         koaCtx.body = 'success'
