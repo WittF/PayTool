@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/WittF/PayTool/compare/v1.0.2...v1.0.3) (2025-08-27)
+
+### ♻️ 代码重构
+
+* **callback, commands:** 重要操作日志始终显示，限制详细错误信息仅在devMode下显示 ([3220286](https://github.com/WittF/PayTool/commit/3220286f96d0d79d73865c8682e7315320ca312e))
+
 ## [1.0.2](https://github.com/WittF/PayTool/compare/v1.0.1...v1.0.2) (2025-08-27)
 
 ### 🐛 Bug修复
