@@ -60,7 +60,8 @@ export function setupCommands(
       try {
         // 验证参数格式
         if (!amount || !isValidAmount(amount.toString())) {
-          return '❌ 参数错误：金额必须是大于0的数字（最大99999）\n📖 正确格式：pay create <金额> [支付方式]'
+          await sendMessage(session, ['❌ 参数错误：金额必须是大于0的数字（最大99999）\n📖 正确格式：pay create <金额> [支付方式]'])
+          return
         }
 
         // 验证并确定支付方式
@@ -71,7 +72,8 @@ export function setupCommands(
           const validatedPayment = validateAndConvertPaymentType(payment, config.paymentMethods)
           if (!validatedPayment) {
             const availableMethods = getAvailablePaymentMethods(config.paymentMethods)
-            return `❌ 参数错误：不支持的支付方式 "${payment}"\n📖 正确格式：pay create <金额> [支付方式]\n💳 支持的支付方式：${availableMethods}`
+            await sendMessage(session, [`❌ 参数错误：不支持的支付方式 "${payment}"\n📖 正确格式：pay create <金额> [支付方式]\n💳 支持的支付方式：${availableMethods}`])
+            return
           }
           paymentType = validatedPayment
         } else {
@@ -79,7 +81,8 @@ export function setupCommands(
           const defaultPayment = validateAndConvertPaymentType(config.defaultPayment, config.paymentMethods)
           if (!defaultPayment) {
             const availableMethods = getAvailablePaymentMethods(config.paymentMethods)
-            return `❌ 配置错误：默认支付方式 "${config.defaultPayment}" 无效\n📖 支持的支付方式：${availableMethods}`
+            await sendMessage(session, [`❌ 配置错误：默认支付方式 "${config.defaultPayment}" 无效\n📖 支持的支付方式：${availableMethods}`])
+            return
           }
           paymentType = defaultPayment
         }
@@ -178,13 +181,15 @@ export function setupCommands(
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
-        return '❌ 此指令仅限管理员使用'
+        await sendMessage(session, ['❌ 此指令仅限管理员使用'])
+        return
       }
 
       try {
         // 验证参数格式
         if (!target || target.trim() === '') {
-          return '❌ 参数错误：请提供订单号或@用户\n📖 正确格式：pay query <订单号> 或 pay query @用户'
+          await sendMessage(session, ['❌ 参数错误：请提供订单号或@用户\n📖 正确格式：pay query <订单号> 或 pay query @用户'])
+          return
         }
 
         // 尝试解析@用户
@@ -199,7 +204,8 @@ export function setupCommands(
           const userOrders = await orderDb.getOrdersByCustomerQQ(normalizedQQ)
           
           if (userOrders.length === 0) {
-            return `❌ 未找到用户 ${normalizedQQ} 的订单记录`
+            await sendMessage(session, [`❌ 未找到用户 ${normalizedQQ} 的订单记录`])
+            return
           }
           
           const orderList = userOrders.map(order => {
@@ -209,14 +215,16 @@ export function setupCommands(
             return `📋 ${order.out_trade_no} - ${statusText}`
           }).join('\n')
           
-          return `👤 用户 ${normalizedQQ} 的订单列表：\n${orderList}`
+          await sendMessage(session, [`👤 用户 ${normalizedQQ} 的订单列表：\n${orderList}`])
+          return
         } else {
           // 如果不是QQ号，当作订单号处理
           const tradeNo = target
           
           // 验证订单号格式
           if (!isValidTradeNo(tradeNo)) {
-            return '❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay query <订单号> 或 pay query @用户'
+            await sendMessage(session, ['❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay query <订单号> 或 pay query @用户'])
+            return
           }
           
           if (config.devMode) {
@@ -228,7 +236,8 @@ export function setupCommands(
                             await orderDb.getOrderByTradeNo(tradeNo)
 
           if (!localOrder) {
-            return '❌ 未找到该订单记录'
+            await sendMessage(session, ['❌ 未找到该订单记录'])
+            return
           }
 
           // 如果启用主动查询模式且该订单正在轮询中，立即触发一次查询
@@ -265,7 +274,8 @@ export function setupCommands(
               
               queryResult += `\n📊 支付状态: ${statusText}\n📅 创建时间: ${orderStatus.addtime}`
 
-              return queryResult
+              await sendMessage(session, [queryResult])
+              return
             } catch (error: any) {
               logger.error(`强制查询订单失败: ${error?.message || '未知错误'}`, error)
               // 继续执行正常的查询逻辑
@@ -285,44 +295,26 @@ export function setupCommands(
           const statusText = (orderStatus.status == 1 || orderStatus.status === '1') ? '✅ 已支付' : '⏳ 未支付'
           const paymentTypeText = formatPaymentType(localOrder.payment_type, config.paymentMethods)
 
-          const messages = [
-            `📋 订单查询结果`,
-            `📋 订单号: ${orderStatus.out_trade_no}`,
-            `💰 订单金额: ¥${orderStatus.money}`,
-            `💳 支付方式: ${paymentTypeText}`,
-            localOrder.customer_qq ? `👤 订单归属人: ${localOrder.customer_qq}` : '',
-            `📊 支付状态: ${statusText}`,
-            `📅 创建时间: ${orderStatus.addtime}`,
-            orderStatus.endtime ? `✅ 完成时间: ${orderStatus.endtime}` : ''
-          ].filter(Boolean)
-
-          // 发送到创建订单时的会话
-          const targetChannelId = localOrder.channel_id
-          const targetGuildId = localOrder.guild_id
-
-          for (const bot of ctx.bots) {
-            try {
-              if (targetGuildId && targetChannelId) {
-                // 群聊通知
-                await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
-                  h('message', {}, messages.join('\n'))
-                ]))
-              } else {
-                // 私聊通知
-                await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
-                  h('message', {}, messages.join('\n'))
-                ]))
-              }
-              break // 成功发送后退出循环
-            } catch (botError: any) {
-              logger.warn(`Bot ${bot.platform}:${bot.selfId} 主动查询通知发送失败: ${botError?.message}`)
-            }
+          let queryResult = `📋 订单查询结果：\n📋 订单号: ${orderStatus.out_trade_no}\n💰 订单金额: ¥${orderStatus.money}\n💳 支付方式: ${paymentTypeText}`
+          
+          // 如果订单有归属人，添加归属人信息
+          if (localOrder.customer_qq) {
+            queryResult += `\n👤 订单归属人: ${localOrder.customer_qq}`
           }
+          
+          queryResult += `\n📊 支付状态: ${statusText}\n📅 创建时间: ${orderStatus.addtime}`
+          
+          if (orderStatus.endtime) {
+            queryResult += `\n✅ 完成时间: ${orderStatus.endtime}`
+          }
+
+          // 直接回复给查询用户
+          await sendMessage(session, [queryResult])
         }
 
       } catch (error: any) {
         logger.error(`查询订单失败: ${error?.message || '未知错误'}`, error)
-        return `❌ 查询订单失败: ${error?.message || '未知错误'}`
+        await sendMessage(session, [`❌ 查询订单失败: ${error?.message || '未知错误'}`])
       }
     })
 
@@ -333,13 +325,15 @@ export function setupCommands(
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
-        return '❌ 此指令仅限管理员使用'
+        await sendMessage(session, ['❌ 此指令仅限管理员使用'])
+        return
       }
 
       try {
         // 验证参数格式
         if (!tradeNo || !isValidTradeNo(tradeNo)) {
-          return '❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay refund <订单号>'
+          await sendMessage(session, ['❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay refund <订单号>'])
+          return
         }
 
         if (config.devMode) {
@@ -351,11 +345,13 @@ export function setupCommands(
                           await orderDb.getOrderByTradeNo(tradeNo)
 
         if (!localOrder) {
-          return '❌ 未找到该订单记录'
+          await sendMessage(session, ['❌ 未找到该订单记录'])
+          return
         }
 
         if (localOrder.status !== 'paid') {
-          return '❌ 只有已支付的订单才能退款'
+          await sendMessage(session, ['❌ 只有已支付的订单才能退款'])
+          return
         }
 
         // 调用退款API
@@ -396,7 +392,7 @@ export function setupCommands(
 
       } catch (error: any) {
         logger.error(`申请退款失败: ${error?.message || '未知错误'}`, error)
-        return `❌ 申请退款失败: ${error?.message || '未知错误'}`
+        await sendMessage(session, [`❌ 申请退款失败: ${error?.message || '未知错误'}`])
       }
     })
 
@@ -407,23 +403,27 @@ export function setupCommands(
 
       // 验证管理员权限
       if (!isAdmin(session.userId, config.adminQQ)) {
-        return '❌ 此指令仅限管理员使用'
+        await sendMessage(session, ['❌ 此指令仅限管理员使用'])
+        return
       }
 
       try {
         // 验证参数格式
         if (!tradeNo || !isValidTradeNo(tradeNo)) {
-          return '❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay provisioning <订单号> @用户'
+          await sendMessage(session, ['❌ 参数错误：订单号格式无效（应为10-25位数字）\n📖 正确格式：pay provisioning <订单号> @用户'])
+          return
         }
 
         if (!targetUser || targetUser.trim() === '') {
-          return '❌ 参数错误：请提供目标用户QQ号或@用户\n📖 正确格式：pay provisioning <订单号> @用户'
+          await sendMessage(session, ['❌ 参数错误：请提供目标用户QQ号或@用户\n📖 正确格式：pay provisioning <订单号> @用户'])
+          return
         }
 
         // 解析目标用户QQ号
         const customerQQ = normalizeQQId(targetUser)
         if (!customerQQ) {
-          return '❌ 参数错误：无效的用户QQ号格式（应为5-12位数字或@用户）\n📖 正确格式：pay provisioning <订单号> @用户'
+          await sendMessage(session, ['❌ 参数错误：无效的用户QQ号格式（应为5-12位数字或@用户）\n📖 正确格式：pay provisioning <订单号> @用户'])
+          return
         }
 
         if (config.devMode) {
@@ -435,7 +435,8 @@ export function setupCommands(
                           await orderDb.getOrderByTradeNo(tradeNo)
 
         if (!localOrder) {
-          return '❌ 未找到该订单记录'
+          await sendMessage(session, ['❌ 未找到该订单记录'])
+          return
         }
 
         // 更新订单归属人
@@ -454,7 +455,7 @@ export function setupCommands(
 
       } catch (error: any) {
         logger.error(`订单分配失败: ${error?.message || '未知错误'}`, error)
-        return `❌ 订单分配失败: ${error?.message || '未知错误'}`
+        await sendMessage(session, [`❌ 订单分配失败: ${error?.message || '未知错误'}`])
       }
     })
 
