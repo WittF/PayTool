@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-pay-tool",
   "description": "适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款、分配等功能",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
