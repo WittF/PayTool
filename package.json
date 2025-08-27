@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-pay-tool",
-  "description": "适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款等功能",
+  "description": "适用于Koishi框架的易支付工具插件，支持订单创建、查询、退款、分配等功能",
   "version": "1.0.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -24,7 +24,8 @@
   ],
   "koishi": {
     "description": {
-      "zh": "易支付工具插件，支持订单创建、查询、退款功能，集成微信支付和支付宝支付"
+      "zh": "易支付工具插件，支持订单创建、查询、退款、分配功能，集成微信支付和支付宝支付",
+      "en": "Epay tool plugin, supporting order creation, query, refund, allocation functions, integrated with WeChat and AliPay"
     }
   },
   "devDependencies": {
