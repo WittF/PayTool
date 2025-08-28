@@ -20,6 +20,7 @@ export interface Config {
   paymentMethods: Record<string, string>
   defaultPayment: string
   notifyUrl: string
+  returnUrl: string
   
 
 }
@@ -96,5 +97,9 @@ export const schema: Schema<Config> = Schema.intersect([
       .description('回调通知地址（配置到易支付后台）')
       .role('link')
       .default('https://koishi.local/paytool/callback/'),
+    returnUrl: Schema.string()
+      .description('跳转地址（可选，交易完成后浏览器跳转地址）')
+      .role('link')
+      .default(''),
   }).description('商户配置'),
 ])

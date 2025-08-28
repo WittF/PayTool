@@ -57,6 +57,7 @@ export function apply(ctx: Context, config: Config) {
       logger.info(`• 分配订单: pay.provisioning <订单号> @用户`)
       logger.info(`📡 回调通知地址: ${config.notifyUrl}`)
       logger.info(`📍 回调路由: ${config.callbackRoute}`)
+      logger.info(`🔗 跳转地址: ${config.returnUrl || '未配置'}`)
       logger.info(`👤 管理员QQ: ${config.adminQQ}`)
       logger.info(`🏪 商户PID: ${config.merchantPid}`)
       logger.info(`💳 默认支付方式: ${config.defaultPayment}`)
