@@ -47,6 +47,7 @@ export interface CreateOrderRequest {
   money: string
   clientip: string
   device?: string
+  return_url?: string
   param?: string
   sign: string
   sign_type: string

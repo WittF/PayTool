@@ -145,7 +145,8 @@ export function setupCommands(
           amount,
           paymentType,
           outTradeNo,
-          notifyUrl
+          notifyUrl,
+          config.returnUrl
         )
 
         // 保存订单到数据库

@@ -32,13 +32,15 @@ export class EpayClient {
    * @param paymentType 支付方式
    * @param outTradeNo 商户订单号
    * @param notifyUrl 回调地址
+   * @param returnUrl 跳转地址（可选）
    * @returns 订单创建结果
    */
   async createOrder(
     amount: number | string, 
     paymentType: PaymentType, 
     outTradeNo: string,
-    notifyUrl: string
+    notifyUrl: string,
+    returnUrl?: string
   ): Promise<CreateOrderResponse> {
     
     const params: CreateOrderRequest = {
@@ -52,6 +54,11 @@ export class EpayClient {
       device: 'pc',
       sign: '',
       sign_type: 'MD5'
+    }
+
+    // 添加跳转地址（如果配置了）
+    if (returnUrl && returnUrl.trim()) {
+      params.return_url = returnUrl
     }
 
     // 生成签名
