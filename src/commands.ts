@@ -636,7 +636,19 @@ async function startActivePolling(
 
         // 发送通知到原会话
         try {
-          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages, "主动查询")
+          // 确保使用最新的订单数据
+          const currentOrder = await orderDb.getOrderByOutTradeNo(outTradeNo)
+          if (!currentOrder) {
+            logger.error(`主动查询通知失败：无法获取订单 ${outTradeNo} 的最新数据`)
+            return
+          }
+          
+          // 调试日志：对比订单数据
+          if (config.devMode) {
+            logger.info(`主动查询订单数据: guild_id=${currentOrder.guild_id}, channel_id=${currentOrder.channel_id}, user_id=${currentOrder.user_id}`)
+          }
+          
+          await sendPaymentSuccessNotification(ctx, config, logger, currentOrder, successMessages, "主动查询")
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
           if (config.devMode) {

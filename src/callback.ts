@@ -89,6 +89,11 @@ export function setupCallback(
 
         // 发送通知到原会话
         try {
+          // 调试日志：对比订单数据
+          if (config.devMode) {
+            logger.info(`回调通知订单数据: guild_id=${localOrder.guild_id}, channel_id=${localOrder.channel_id}, user_id=${localOrder.user_id}`)
+          }
+          
           await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages, "回调通知")
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
