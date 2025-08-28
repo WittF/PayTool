@@ -1,3 +1,11 @@
+## [1.0.4](https://github.com/WittF/PayTool/compare/v1.0.3...v1.0.4) (2025-08-28)
+
+### ♻️ 代码重构
+
+* **callback, commands:** 增强支付成功通知逻辑，添加调试日志以便于开发模式下的订单数据对比 ([0217b58](https://github.com/WittF/PayTool/commit/0217b58f9796086b5caf2d729be7d2c7cacc9862))
+* **callback, commands:** 更新支付成功通知逻辑，增加触发源参数以增强日志信息 ([644f308](https://github.com/WittF/PayTool/commit/644f30814f066bfcfc59e187520dd43a35ed1119))
+* **callback, commands:** 重构支付成功通知逻辑，简化消息发送流程并增强错误处理 ([dd292c1](https://github.com/WittF/PayTool/commit/dd292c1249d1a8e21b38da801fbf94973f1f00f0))
+
 ## [1.0.3](https://github.com/WittF/PayTool/compare/v1.0.2...v1.0.3) (2025-08-27)
 
 ### ♻️ 代码重构
