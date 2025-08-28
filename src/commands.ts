@@ -47,7 +47,8 @@ export async function sendPaymentSuccessNotification(
   config: Config,
   logger: Logger,
   orderRecord: any,
-  successMessages: string[]
+  successMessages: string[],
+  triggerSource: string = "未知"
 ): Promise<void> {
   const targetChannelId = orderRecord.channel_id
   const targetGuildId = orderRecord.guild_id
@@ -60,13 +61,13 @@ export async function sendPaymentSuccessNotification(
         await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
           h('message', {}, successMessages.join('\n'))
         ]))
-        logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
+        logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId} (触发源: ${triggerSource})`)
       } else {
         // 私聊通知
         await bot.sendPrivateMessage(orderRecord.user_id, h('message', { forward: true }, [
           h('message', {}, successMessages.join('\n'))
         ]))
-        logger.info(`已发送支付成功通知到用户 ${orderRecord.user_id}`)
+        logger.info(`已发送支付成功通知到用户 ${orderRecord.user_id} (触发源: ${triggerSource})`)
       }
       messageSent = true
       break // 成功发送后退出循环
@@ -611,6 +612,7 @@ async function startActivePolling(
         
         // 检查订单是否已经处理过（防止重复通知）
         if (localOrder?.status === 'paid') {
+          logger.info(`订单 ${outTradeNo} 已支付完成，跳过主动查询通知`)
           return // 已经通知过，直接返回
         }
         
@@ -634,7 +636,7 @@ async function startActivePolling(
 
         // 发送通知到原会话
         try {
-          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages)
+          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages, "主动查询")
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
           if (config.devMode) {

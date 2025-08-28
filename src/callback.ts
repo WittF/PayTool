@@ -59,7 +59,7 @@ export function setupCallback(
       if (callbackData.trade_status === 'TRADE_SUCCESS') {
         // 避免重复处理
         if (localOrder.status === 'paid') {
-          logger.info(`订单 ${callbackData.out_trade_no} 已处理过`)
+          logger.info(`订单 ${callbackData.out_trade_no} 已支付完成，收到回调通知但跳过处理`)
           koaCtx.body = 'success'
           return
         }
@@ -89,7 +89,7 @@ export function setupCallback(
 
         // 发送通知到原会话
         try {
-          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages)
+          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages, "回调通知")
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
           if (config.devMode) {
