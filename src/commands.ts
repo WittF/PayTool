@@ -14,9 +14,10 @@ const activePollings = new Map<string, {
 /**
  * 通用消息发送函数，处理私聊和群聊的不同格式
  */
-async function sendMessage(session: Session, content: any[], options?: { quote?: boolean }): Promise<string[]> {
+async function sendMessage(session: Session, content: any[], options?: { quote?: boolean, mention?: boolean }): Promise<string[]> {
   try {
     const shouldQuote = options?.quote !== false
+    const shouldMention = options?.mention !== false
     
     // 检查是否为私聊
     const isPrivate = session.channelId?.startsWith('private:')
@@ -26,7 +27,8 @@ async function sendMessage(session: Session, content: any[], options?: { quote?:
     if (shouldQuote) {
       elements.push(h.quote(session.messageId))
     }
-    if (!isPrivate) {
+    // 只有在非私聊且需要@时才添加@
+    if (!isPrivate && shouldMention) {
       elements.push(h.at(session.userId), '\n')
     }
     elements.push(...content)
@@ -34,6 +36,47 @@ async function sendMessage(session: Session, content: any[], options?: { quote?:
     return await session.send(elements)
   } catch (error: any) {
     throw new Error(`发送消息失败: ${error?.message || '未知错误'}`)
+  }
+}
+
+/**
+ * 发送支付成功通知到指定会话
+ */
+export async function sendPaymentSuccessNotification(
+  ctx: Context,
+  config: Config,
+  logger: Logger,
+  orderRecord: any,
+  successMessages: string[]
+): Promise<void> {
+  const targetChannelId = orderRecord.channel_id
+  const targetGuildId = orderRecord.guild_id
+  let messageSent = false
+
+  for (const bot of ctx.bots) {
+    try {
+      if (targetGuildId && targetChannelId) {
+        // 群聊通知
+        await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
+          h('message', {}, successMessages.join('\n'))
+        ]))
+        logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
+      } else {
+        // 私聊通知
+        await bot.sendPrivateMessage(orderRecord.user_id, h('message', { forward: true }, [
+          h('message', {}, successMessages.join('\n'))
+        ]))
+        logger.info(`已发送支付成功通知到用户 ${orderRecord.user_id}`)
+      }
+      messageSent = true
+      break // 成功发送后退出循环
+    } catch (botError: any) {
+      logger.warn(`Bot ${bot.platform}:${bot.selfId} 发送消息失败: ${botError?.message}`)
+    }
+  }
+
+  if (!messageSent) {
+    throw new Error('所有Bot都发送失败')
   }
 }
 
@@ -219,7 +262,7 @@ export function setupCommands(
             return `📋 ${order.out_trade_no} - ${statusText}`
           }).join('\n')
           
-          await sendMessage(session, [`👤 用户 ${normalizedQQ} 的订单列表：\n${orderList}`])
+          await sendMessage(session, [`👤 用户 ${normalizedQQ} 的订单列表：\n${orderList}`], { mention: false })
           return
         } else {
           // 如果不是QQ号，当作订单号处理
@@ -277,7 +320,7 @@ export function setupCommands(
               
               queryResult += `\n📊 支付状态: ${statusText}\n📅 创建时间: ${orderStatus.addtime}`
 
-              await sendMessage(session, [queryResult])
+              await sendMessage(session, [queryResult], { mention: false })
               return
             } catch (error: any) {
               // 内部错误 - 只在devMode下显示
@@ -315,7 +358,7 @@ export function setupCommands(
           }
 
           // 直接回复给查询用户
-          await sendMessage(session, [queryResult])
+          await sendMessage(session, [queryResult], { mention: false })
         }
 
       } catch (error: any) {
@@ -565,6 +608,12 @@ async function startActivePolling(
       if ((orderStatus.status == 1 || orderStatus.status === '1')) {
         // 支付成功，清理轮询
         activePollings.delete(outTradeNo)
+        
+        // 检查订单是否已经处理过（防止重复通知）
+        if (localOrder?.status === 'paid') {
+          return // 已经通知过，直接返回
+        }
+        
         await orderDb.updateOrderStatus(outTradeNo, 'paid')
         
         // 发送通知 - 使用创建订单时的支付方式，而不是API返回的
@@ -585,12 +634,7 @@ async function startActivePolling(
 
         // 发送通知到原会话
         try {
-          await sendMessage(session, [h('message', { forward: true }, [
-            h('message', {}, successMessages.join('\n'))
-          ])], { quote: false })
-          
-          // 重要操作日志 - 始终显示
-          logger.info(`已发送支付成功通知到用户 ${session.userId}`)
+          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages)
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
           if (config.devMode) {

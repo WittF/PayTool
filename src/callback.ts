@@ -4,6 +4,7 @@ import { Config } from './config'
 import { OrderDatabase } from './database'
 import { PaymentCallback } from './types'
 import { verifySign, formatPaymentType } from './utils'
+import { sendPaymentSuccessNotification } from './commands'
 
 export function setupCallback(
   ctx: Context,
@@ -88,37 +89,7 @@ export function setupCallback(
 
         // 发送通知到原会话
         try {
-          const targetChannelId = localOrder.channel_id
-          const targetGuildId = localOrder.guild_id
-          let messageSent = false
-
-          for (const bot of ctx.bots) {
-            try {
-              if (targetGuildId && targetChannelId) {
-                // 群聊通知
-                await bot.sendMessage(targetChannelId, h('message', { forward: true }, [
-                  h('message', {}, successMessages.join('\n'))
-                ]))
-                // 重要操作日志 - 始终显示
-                logger.info(`已发送支付成功通知到群聊 ${targetGuildId}:${targetChannelId}`)
-              } else {
-                // 私聊通知
-                await bot.sendPrivateMessage(localOrder.user_id, h('message', { forward: true }, [
-                  h('message', {}, successMessages.join('\n'))
-                ]))
-                // 重要操作日志 - 始终显示
-                logger.info(`已发送支付成功通知到用户 ${localOrder.user_id}`)
-              }
-              messageSent = true
-              break // 成功发送后退出循环
-            } catch (botError: any) {
-              logger.warn(`Bot ${bot.platform}:${bot.selfId} 发送消息失败: ${botError?.message}`)
-            }
-          }
-
-          if (!messageSent) {
-            throw new Error('所有Bot都发送失败')
-          }
+          await sendPaymentSuccessNotification(ctx, config, logger, localOrder, successMessages)
         } catch (error: any) {
           // 内部错误 - 只在devMode下显示
           if (config.devMode) {
