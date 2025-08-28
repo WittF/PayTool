@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/WittF/PayTool/compare/v1.0.4...v1.1.0) (2025-08-28)
+
+### ✨ 功能更新
+
+* **config:** 添加跳转地址配置项支持return_url参数 ([e533d42](https://github.com/WittF/PayTool/commit/e533d42c8304699779916ed4a3b9efdc11236e6b))
+
 ## [1.0.4](https://github.com/WittF/PayTool/compare/v1.0.3...v1.0.4) (2025-08-28)
 
 ### ♻️ 代码重构
