@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/WittF/PayTool/compare/v1.1.0...v1.1.1) (2025-11-06)
+
+### 🐛 Bug修复
+
+* **api-client:** 修复API响应解析问题 ([13b4a36](https://github.com/WittF/PayTool/commit/13b4a3602018388103e5996295d338bffcf73789))
+
 ## [1.1.0](https://github.com/WittF/PayTool/compare/v1.0.4...v1.1.0) (2025-08-28)
 
 ### ✨ 功能更新
