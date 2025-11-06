@@ -24,6 +24,20 @@ export class EpayClient {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     })
+
+    // 添加响应拦截器,处理API返回字符串的情况
+    this.axios.interceptors.response.use(response => {
+      // 如果响应数据是字符串,尝试解析为JSON
+      if (typeof response.data === 'string') {
+        try {
+          response.data = JSON.parse(response.data)
+        } catch (e) {
+          // 如果解析失败,保持原样
+          this.logger.warn('无法解析API响应为JSON:', response.data)
+        }
+      }
+      return response
+    })
   }
 
   /**
